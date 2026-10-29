@@ -1,0 +1,58 @@
+{
+  "bands": {
+    "allow": 0,
+    "challenge": 30,
+    "deceive": 55,
+    "tarpit": 70,
+    "block": 90
+  },
+  "weights": {},
+  "honeypots": [
+    "/.env",
+    "/.git/config",
+    "/wp-login.php",
+    "/wp-admin",
+    "/admin.php",
+    "/phpmyadmin",
+    "/actuator/env",
+    "/server-status",
+    "/api/v1/users/export",
+    "/api/internal/metrics"
+  ],
+  "blocklist_ja3": [],
+  "signed_paths": ["/api/v1/partner"],
+  "api_keys": {},
+  "hard_block": [
+    "proto.smuggling_probe",
+    "proto.edge_signature_invalid",
+    "app.replay_detected",
+    "app.bad_signature",
+    "client.attestation_forged",
+    "data.canary_echo"
+  ],
+  "challenge": {
+    "ttl_seconds": 120,
+    "difficulty": 18,
+    "min_difficulty": 14,
+    "max_difficulty": 26,
+    "attest_ttl_seconds": 3600
+  },
+  "rate": { "rate": 0.5, "burst": 40 },
+  "tarpit": { "base_ms": 350, "per_point_ms": 60, "max_ms": 4000, "jitter_ms": 120 },
+  "security": {
+    "secret": "",
+    "trust_proxy": false,
+    "edge_secret": "",
+    "expose_score": false,
+    "audit_path": "audit/fightre.jsonl",
+    "redact_ip": true,
+    "cookie_name": "fightre_att"
+  },
+  "trust_attested": 30,
+  "trust_signed_client": 30,
+  "poison_enabled": true,
+  "bypass_paths": ["/healthz", "/favicon.ico"],
+  "max_body_bytes": 1048576,
+  "sequence_window_seconds": 60,
+  "sequence_paths": 25
+}

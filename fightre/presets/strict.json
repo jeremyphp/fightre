@@ -1,0 +1,21 @@
+{
+  "bands": {
+    "allow": 0,
+    "challenge": 20,
+    "deceive": 42,
+    "tarpit": 58,
+    "block": 75
+  },
+  "challenge": {
+    "ttl_seconds": 90,
+    "difficulty": 20,
+    "min_difficulty": 16,
+    "max_difficulty": 28,
+    "attest_ttl_seconds": 1800
+  },
+  "rate": { "rate": 0.3, "burst": 25 },
+  "tarpit": { "base_ms": 600, "per_point_ms": 80, "max_ms": 6000, "jitter_ms": 200 },
+  "trust_attested": 22,
+  "poison_enabled": true,
+  "sequence_paths": 15
+}

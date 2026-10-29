@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fightre"
+version = "0.1.0"
+description = "FightRE - five-layer anti-reverse-engineering defense for web services (zero runtime dependencies)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "FightRE Contributors" }]
+keywords = [
+  "anti-reverse-engineering",
+  "bot-detection",
+  "ja3",
+  "tls-fingerprint",
+  "proof-of-work",
+  "deception",
+  "canary-token",
+  "application-security",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Security",
+  "Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware",
+  "Framework :: AsyncIO",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "ruff>=0.5"]
+
+[project.urls]
+Homepage = "https://github.com/your-org/fightre"
+Documentation = "https://github.com/your-org/fightre/tree/main/docs"
+"Bug Tracker" = "https://github.com/your-org/fightre/issues"
+
+[project.scripts]
+fightre = "fightre.cli:main"
+
+[tool.setuptools]
+packages = ["fightre"]
+
+[tool.setuptools.package-data]
+fightre = ["client/*.js", "presets/*.json"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501"]
