@@ -29,6 +29,19 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Self test
         run: python -m fightre.cli selftest
+      - name: Native audit
+        run: python -m fightre native examples
+      - name: Runtime self-check
+        run: python -m fightre selfcheck --strict --no-ports
+      - name: Manifest round-trip
+        run: |
+          python -m fightre manifest sign examples/leaky-dist --secret ci-secret --out /tmp/manifest.json
+          python -m fightre manifest verify /tmp/manifest.json --root examples/leaky-dist
+          echo tamper >> examples/leaky-dist/config.json
+          if python -m fightre manifest verify /tmp/manifest.json --root examples/leaky-dist; then
+            echo "expected tamper detection to fail" >&2
+            exit 1
+          fi
 
   lint:
     name: lint

@@ -69,6 +69,12 @@ All fields are optional; defaults are safe.
 | `security.redact_ip` | `true` | hash identities with a daily salt |
 | `poison_enabled` | `true` | serve fabricated OpenAPI/honey endpoints |
 | `bypass_paths` | `/healthz`, `/favicon.ico` | never scored |
+| `redis.enabled` | `false` | use Redis for shared state |
+| `redis.host` / `port` / `db` | `127.0.0.1` / `6379` / `0` | server address |
+| `redis.password` | `""` | `AUTH` password |
+| `redis.prefix` | `fightre` | key namespace |
+| `redis.timeout` | `1.0` | connect/read timeout, seconds |
+| `redis.max_connections` | `8` | idle pool size |
 
 Generate a secret with `fightre keygen`. Never commit it; load it from the
 platform's secret store ( Kubernetes Secret, AWS Secrets Manager, systemd
@@ -147,11 +153,47 @@ fightre explain audit/fightre.jsonl -v
 
 - Memory per identity: a few hundred bytes (bucket + deque). 50k identities is
   single-digit MB.
-- Replay defence and rate limits are per process. With N workers behind a load
-  balancer, either enable sticky sessions by client IP, or supply a shared
-  store: `NonceStore.consume` and `RateLimiter.allow` are the two seams to
-  reimplement (Redis `SET NX EX` for nonces, a Redis token bucket for limits).
-- Attestation itself is stateless and needs no shared store.
+- Attestation and request signatures are stateless; any worker can verify them.
+- Replay defence, rate limits, path diversity and canary attribution are **not**
+  stateless. With more than one worker, enable Redis:
+
+```json
+{
+  "redis": { "enabled": true, "host": "10.0.0.12", "port": 6379, "prefix": "fightre" }
+}
+```
+
+FightRE ships its own RESP client, so this adds no Python dependency. Keys:
+
+```
+fightre:nonce:<hash>              SET NX EX <ttl>     single-use nonces/challenges
+fightre:rate:<identity>:<bucket>  INCR + EXPIRE       fixed window (burst / rate seconds)
+fightre:canary:<token>            SET EX 90d          cross-worker attribution
+fightre:seq:<identity>:<bucket>   SADD + SCARD        distinct-path crawler detection
+```
+
+Behaviour when Redis is down: each store falls back to its in-memory twin and
+increments an error counter. The service keeps serving, with weaker coordination.
+Check the backend any time:
+
+```bash
+$ fightre stores --config fightre.json
+{
+  "backend": "redis",
+  "ok": true,
+  "errors": 0
+}
+```
+
+The rate limiter uses a fixed window sized `burst / rate` seconds (default 80 s),
+which approximates the local token bucket at window boundaries. If you need exact
+token-bucket semantics across workers, replace `RedisRateLimiter.allow` with a
+Lua script -- the interface is one method.
+
+Canary attribution is the one feature where Redis genuinely improves security
+rather than convenience: without it, a canary issued by worker A is invisible to
+worker B. The hybrid registry writes through on issue and reads through on
+detection.
 
 ## 9. Kubernetes / health checks
 

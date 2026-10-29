@@ -18,6 +18,9 @@ REA（Reverse Engineer Anything）把逆向工程变成了一条 Agent 流水线
 ```
 $ fightre serve            # 带防护的演示服务
 $ fightre audit ./dist     # 这份构建产物会被 REA 拿走什么？
+$ fightre native ./dist    # 符号表、DWARF/PDB、PIE/NX/RELRO 加固姿态
+$ fightre selfcheck        # 当前进程是否被调试器/Frida 插桩？
+$ fightre manifest sign ./dist --out build.manifest.json
 $ fightre selftest         # 校验密码学原语
 ```
 
@@ -101,6 +104,46 @@ FightRE artifact audit - E:\fightrea\examples\leaky-dist
 
 CI 友好：`--fail-over 70` 决定退出码，`--markdown` / `--json` 输出报告。
 
+## 浏览器之外：原生、运行时、防篡改
+
+HTTP 层看不到的地方，由另外三条命令补上：
+
+**`fightre native`** 直接解析 ELF / PE / Mach-O 头（不做反汇编），给静态分析
+"白送"的东西打分：
+
+```
+$ fightre native ./dist
+  binaries : 3 (skipped 12)
+  score    : 83.2/100 (worst binary)
+
+  binary              arch       strip  dwarf  pie  nx   relro  score
+  ...\dist\app        x86-64     no     no     no   no   no     83.2
+  ...\dist\libcore.so aarch64    yes    yes    yes  yes  yes    0.0
+```
+
+**`fightre selfcheck`** 回答"这个进程现在被插桩了吗"：附加的调试器、`/proc/self/maps`
+里的 Frida agent、默认端口、库预加载。失败项映射成服务端已经认识的同名信号。
+
+**`fightre manifest`** 对构建做"路径 + 大小 + SHA-256"的签名清单，之后校验：
+被改、缺失、被添加的文件都会报出来。随构建发布、启动时校验，任何没被动过的部署
+都能自证清白。
+
+Android（root、Frida、调试器、模拟器、Xposed）与 iOS（越狱、`P_TRACED`、Frida、
+App Attest）参考实现放在 [`native/`](native/README.md)，并把 Play Integrity /
+App Attest 的接口留在真正有硬件信任根的位置。原则一致：**客户端检查只提供线索，
+服务端才做裁决。**
+
+## 一个构建，多个 worker
+
+把 `redis.enabled` 打开，内存版的 nonce、限流、金丝雀、路径多样性存储会切到
+Redis——用的是内置 RESP 客户端，依旧零依赖。防重放和金丝雀归因变成集群级；
+Redis 挂了则每个存储降级回本地双胞胎，服务继续可用。
+
+```bash
+$ fightre stores --config fightre.json
+{"backend": "redis", "ok": true, "errors": 0}
+```
+
 ## 快速开始
 
 ```bash
@@ -164,7 +207,7 @@ score=86.4 action=tarpit
 ```
 fightre/            包本体（仅标准库）
   guard.py          请求 → 判定
-  signals.py        五层 47 个信号
+  signals.py        五层 51 个信号
   scoring.py        noisy-OR + 解释
   policy.py         档位、硬阻断、迷宫规则
   headers.py        UA/Client-Hints、头部顺序、走私
@@ -177,10 +220,16 @@ fightre/            包本体（仅标准库）
   deception.py      合成响应、tarpit
   canary.py         金丝雀 + 零宽水印
   artifacts.py      构建产物审计
+  native.py         ELF/PE/Mach-O 加固与符号审计
+  instrumentation.py 调试器/Frida 自检
+  manifest.py       签名构建清单
+  stores.py         内存 / Redis 共享状态
+  redis.py          零依赖 RESP2 客户端
   client/fightre.js 浏览器端证明
+native/             Android / iOS 参考守卫与移动端文档
 demo/run_demo.py    端到端实测
 docs/               威胁模型、架构、部署、信号目录
-tests/              102 个单元测试
+tests/              145 个单元测试
 ```
 
 ## 设计原则
@@ -202,8 +251,9 @@ tests/              102 个单元测试
 
 ## 路线图
 
-- Redis 版 nonce/限流存储，支持多 worker。
-- 原生侧配套（Rust/C++）：符号清理、完整性自检、Frida/root 检测、硬件级证明接入。
+- ~~Redis 版 nonce/限流存储，支持多 worker~~（0.2.0 已完成）
+- ~~原生产物审计、运行时自检、构建清单~~（0.2.0 已完成）
+- Rust/C++ 运行时 shim：桌面端进程内完整性校验与硬件证明接入。
 - 按会话的响应多态：每条响应带不同水印，一条泄露记录就能定位到会话而不只是租户。
 - 基于审计日志的权重自动调优（误报反馈闭环）。
 
@@ -218,7 +268,8 @@ FightRE 用于保护你拥有或运营的软件。不得用于干扰他人的工
 - [威胁模型](docs/THREAT-MODEL.md)：REA 能做什么，逐项对应
 - [架构](docs/ARCHITECTURE.md)：流水线、评分、状态、扩展点
 - [部署](docs/DEPLOYMENT.md)：框架接入、边缘指纹、灰度上线
-- [信号目录](docs/SIGNALS.md)：47 个信号，由代码生成
+- [信号目录](docs/SIGNALS.md)：51 个信号，由代码生成
+- [原生与移动端](native/README.md)：二进制审计、自检、Android/iOS 守卫
 
 ## 许可
 

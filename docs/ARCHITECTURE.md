@@ -47,9 +47,14 @@
 | `fightre/deception.py` | L4 | synthetic payloads, tarpit delays, attribution |
 | `fightre/canary.py` | L5 | canary tokens, zero-width watermarking |
 | `fightre/report.py` | - | JSONL audit trail, salted identity hashing |
+| `fightre/stores.py` | - | shared-state backends: memory, Redis, hybrid canary registry |
+| `fightre/redis.py` | - | zero-dependency RESP2 client and idle pool |
+| `fightre/native.py` | L0 | ELF/PE/Mach-O hygiene: symbols, DWARF/PDB, PIE/NX/RELRO/CFG |
+| `fightre/instrumentation.py` | L3 | runtime self-check: debugger, Frida, preload |
+| `fightre/manifest.py` | L0 | signed build inventory for tamper detection |
 | `fightre/middleware.py` / `wsgi.py` | - | framework adapters |
 | `fightre/artifacts.py` | L0 | pre-deployment build audit |
-| `fightre/cli.py` | - | `serve / audit / signals / selftest / keygen / explain / edge-sign` |
+| `fightre/cli.py` | - | `serve / audit / native / selfcheck / manifest / stores / signals / selftest / keygen / explain / edge-sign` |
 | `fightre/client/fightre.js` | L3 | browser env collection, SHA-256 PoW, attestation |
 
 ## 3. Scoring model
@@ -97,20 +102,20 @@ Bands, weights and both lists are configuration, not code (`fightre/presets/`).
 
 ## 5. State and concurrency
 
-All state is in-process and thread-safe:
+All state is in-process and thread-safe by default, or shared through Redis when
+`redis.enabled` is set:
 
 | state | structure | bound |
 | --- | --- | --- |
-| solved challenges | `NonceStore` (TTL dict) | 200k entries |
-| signature nonces | `NonceStore` | 200k entries |
-| rate buckets | `RateLimiter` dict | 50k identities |
-| path diversity | `SequenceTracker` deques | 20k identities × 60s |
-| canaries | `CanaryRegistry` | TTL 90 days |
+| solved challenges | `NonceStore` — TTL dict or `SET NX EX` | 200k entries / server TTL |
+| signature nonces | `NonceStore` (same backend) | 200k entries / server TTL |
+| rate buckets | `RateLimiter` token bucket or `INCR` window | 50k identities |
+| path diversity | `SequenceTracker` deques or `SADD`/`SCARD` | 20k identities × 60s |
+| canaries | `CanaryRegistry`, hybrid with Redis write-through | TTL 90 days |
 
-Multi-worker deployments: enable sticky sessions (attestation is stateless, but
-rate limits and replay stores are not) or point the stores at Redis via the
-`NonceStore` interface. Cross-worker replay defence is the only thing that
-strictly requires shared state; it is documented in `docs/DEPLOYMENT.md`.
+The Redis path is optional and degrades to memory on failure (see
+`docs/DEPLOYMENT.md#8-capacity-and-shared-state`). Multi-worker replay defence is
+the only thing that strictly requires shared state.
 
 ## 6. Performance
 

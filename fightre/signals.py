@@ -158,6 +158,18 @@ LIBRARY: Dict[str, SignalSpec] = {
     "client.env_anomaly": SignalSpec(
         Layer.CLIENT, 18, "Client environment has an unusual but non-decisive property"
     ),
+    "client.debugger_attached": SignalSpec(
+        Layer.CLIENT, 55, "A debugger or tracer is attached to the process (TracerPid, sys.gettrace)"
+    ),
+    "client.instrumentation_detected": SignalSpec(
+        Layer.CLIENT, 70, "Dynamic instrumentation agent found in process memory (Frida/gum)"
+    ),
+    "client.preload_hijack": SignalSpec(
+        Layer.CLIENT, 45, "Library preload or injected extension is active (LD_PRELOAD, DYLD_INSERT)"
+    ),
+    "client.root_or_jailbreak": SignalSpec(
+        Layer.CLIENT, 35, "Device is rooted/jailbroken, weakening every client-side control"
+    ),
     # --- L4: application ---------------------------------------------------
     "app.honeypot_endpoint": SignalSpec(
         Layer.APP, 85, "Request hit a decoy endpoint that no real client links to"

@@ -10,28 +10,25 @@ in tests, in the demo and in production.
 from __future__ import annotations
 
 import json
-import threading
 import time
-from collections import deque
 from dataclasses import dataclass, field
-from typing import Deque, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from . import headers as header_rules
 from . import signals as sig
 from .agent_detect import analyze as analyze_agent
 from .attest import AttestResult, AttestationVerifier
-from .canary import CanaryRegistry
 from .challenge import ChallengeIssuer
 from .config import Config
 from .decoy import DecoyFabric
 from .deception import Decepter
 from .fingerprint import known_blocked, normalize_ja3, verify_edge_signature
 from .policy import Action, Decision, Policy
-from .ratelimit import RateLimiter
 from .report import AuditLog
 from .scoring import RiskEngine, RiskReport
 from .signals import Signal
 from .signing import RequestSigner, SignatureResult
+from .stores import SequenceTracker, Stores, build_stores
 
 BROWSER_HINTS = ("mozilla/", "chrome/", "safari/", "firefox/")
 COOKIE_NAME_DEFAULT = "fightre_att"
@@ -126,50 +123,28 @@ class Verdict:
         }
 
 
-class SequenceTracker:
-    """Counts distinct paths per identity in a sliding window."""
-
-    def __init__(self, window_seconds: int = 60, distinct: int = 25, max_keys: int = 20_000) -> None:
-        self.window = float(window_seconds)
-        self.distinct = int(distinct)
-        self.max_keys = int(max_keys)
-        self._events: Dict[str, Deque[Tuple[float, str]]] = {}
-        self._lock = threading.Lock()
-
-    def hit(self, identity: str, path: str, now: Optional[float] = None) -> bool:
-        stamp = time.time() if now is None else now
-        with self._lock:
-            if len(self._events) > self.max_keys:
-                self._events.clear()
-            events = self._events.setdefault(identity, deque())
-            cutoff = stamp - self.window
-            while events and events[0][0] < cutoff:
-                events.popleft()
-            events.append((stamp, path))
-            if len({p for _, p in events}) >= self.distinct:
-                events.clear()
-                return True
-            return False
-
-
 class Guard:
     """Holds all defence state for one process."""
 
-    def __init__(self, config: Optional[Config] = None) -> None:
+    def __init__(self, config: Optional[Config] = None, stores: Optional[Stores] = None) -> None:
         self.config = config or Config()
         secret = self.config.resolve_secret()
         challenge_cfg = self.config.challenge
+        self.stores = stores if stores is not None else build_stores(self.config, secret)
         self.issuer = ChallengeIssuer(
-            secret, ttl_seconds=challenge_cfg.ttl_seconds, difficulty=challenge_cfg.difficulty
+            secret,
+            ttl_seconds=challenge_cfg.ttl_seconds,
+            difficulty=challenge_cfg.difficulty,
+            store=self.stores.nonce,
         )
         self.attestation = AttestationVerifier(
             secret,
             ttl_seconds=challenge_cfg.attest_ttl_seconds,
             trust=self.config.trust_attested,
         )
-        self.signer = RequestSigner(self.config.api_keys)
-        self.limiter = RateLimiter(self.config.rate.rate, self.config.rate.burst)
-        self.canaries = CanaryRegistry()
+        self.signer = RequestSigner(self.config.api_keys, store=self.stores.nonce)
+        self.limiter = self.stores.rate
+        self.canaries = self.stores.canaries
         self.audit = AuditLog(self.config.security.audit_path)
         self.decepter = Decepter(self.canaries, self.config.tarpit)
         self.decoys = DecoyFabric(self.canaries)
@@ -183,9 +158,7 @@ class Guard:
             tarpit_max_ms=self.config.tarpit.max_ms,
             hard_block=self.config.hard_block,
         )
-        self.sequence = SequenceTracker(
-            self.config.sequence_window_seconds, self.config.sequence_paths
-        )
+        self.sequence = self.stores.sequence
 
     # -- bypass ------------------------------------------------------------
     def is_bypass(self, path: str) -> bool:
@@ -418,12 +391,19 @@ class Guard:
         )
 
     # -- observability -----------------------------------------------------
+    def close(self) -> None:
+        """Release pooled connections (Redis backend only)."""
+        client = getattr(self.stores, "client", None)
+        if client is not None:
+            client.close()
+
     def stats(self) -> Dict[str, object]:
         return {
             "canaries": len(self.canaries),
             "buckets": len(self.limiter),
             "bands": dict(self.policy.bands),
             "poison": self.config.poison_enabled,
+            "stores": self.stores.health(),
         }
 
 

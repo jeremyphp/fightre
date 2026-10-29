@@ -19,6 +19,9 @@ audit/
 runtime/
 demo-out/
 canary-registry.json
+fightre-audit.md
+fightre-native.md
+build.manifest.json
 
 # Editors / OS
 .idea/

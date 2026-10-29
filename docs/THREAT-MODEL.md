@@ -52,7 +52,9 @@ lose trust:
 
 | REA capability | FightRE layer | Mechanism | Residual risk |
 | --- | --- | --- | --- |
-| Static harvesting of builds | L0 artifact audit | `fightre audit` flags maps, symbols, secrets, schemas, internal hosts | An analyst can still read minified code |
+| Static harvesting of builds | L0 artifact + native audit | `fightre audit` and `fightre native` flag maps, symbols, DWARF/PDB, secrets, schemas, internal hosts | An analyst can still read minified code and stripped assembly |
+| Tampered install (patched binary) | L0 manifest | signed path/size/SHA-256 inventory; modified, missing and added files detected | The verifier itself can be patched |
+| Desktop/mobile process instrumentation | L3 runtime | `fightre selfcheck` and the Android/iOS guards detect tracers, Frida agents, preloads, root/jailbreak | Stealth tooling hides its traces |
 | Client logic reconstruction | L3 client + L4 app | attestation, PoW cost, server-side gating, per-session data | Hooks can fake env signals |
 | Frida / debugger attachment | L3 client | `webdriver`, CDP artefacts, native-function integrity, consistency checks | Stealth tooling hides its traces |
 | mitmproxy / HAR capture | L2 protocol + L4 app | TLS pinning guidance, request signing, nonce replay defence, short-lived attestation | Rooted device can bypass pinning |

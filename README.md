@@ -23,6 +23,9 @@ harvest from your artifact in five minutes.
 ```
 $ fightre serve            # guarded demo service
 $ fightre audit ./dist     # what would REA get from this build?
+$ fightre native ./dist    # symbols, DWARF/PDB, PIE/NX/RELRO posture
+$ fightre selfcheck        # is this process being instrumented?
+$ fightre manifest sign ./dist --out build.manifest.json
 $ fightre selftest         # verify the crypto primitives
 ```
 
@@ -120,6 +123,49 @@ FightRE artifact audit - E:\fightrea\examples\leaky-dist
 Exit code is CI-friendly (`--fail-over 70`), output can be Markdown (`--markdown`)
 or JSON (`--json`).
 
+## Beyond the browser: native, runtime, tamper
+
+Three more commands cover what the HTTP layer cannot see.
+
+**`fightre native`** parses ELF, PE and Mach-O headers (no disassembly) and scores
+what a static analyser gets for free:
+
+```
+$ fightre native ./dist
+  binaries : 3 (skipped 12)
+  score    : 83.2/100 (worst binary)
+
+  binary              arch       strip  dwarf  pie  nx   relro  score
+  ...\dist\app        x86-64     no     no     no   no   no     83.2
+  ...\dist\libcore.so aarch64    yes    yes    yes  yes  yes    0.0
+```
+
+**`fightre selfcheck`** answers "is this process being instrumented?" — attached
+tracer, Frida agent in `/proc/self/maps`, default Frida ports, library preload.
+Failures become the same `client.*` signals the server already understands.
+
+**`fightre manifest`** signs a path/size/SHA-256 inventory of a build and verifies
+it later; modified, missing and added files are all reported. Ship the manifest,
+verify at startup, and every untouched deployment can prove it.
+
+Reference guards for **Android** (root, Frida, debugger, emulator, Xposed) and
+**iOS** (jailbreak, `P_TRACED`, Frida, App Attest) live in
+[`native/`](native/README.md), with the Play Integrity / App Attest interfaces
+where the hardware root of trust actually is. The design rule is consistent:
+client checks are advisory, the server enforces.
+
+## One binary, many workers
+
+`redis.enabled` swaps the in-memory nonce, rate-limit, canary and path-diversity
+stores for Redis — through a built-in RESP client, so still zero dependencies.
+Replay defence and canary attribution become cluster-wide; if Redis disappears,
+each store falls back to its local twin and keeps serving.
+
+```bash
+$ fightre stores --config fightre.json
+{"backend": "redis", "ok": true, "errors": 0}
+```
+
 ## Install and integrate
 
 ```bash
@@ -185,7 +231,7 @@ Bands, weights and both lists live in `fightre/presets/*.json`.
 ```
 fightre/            the package (stdlib only)
   guard.py          request → verdict
-  signals.py        47 signals across 5 layers
+  signals.py        51 signals across 5 layers
   scoring.py        noisy-OR + explanation
   policy.py         bands, hard blocks, maze rule
   headers.py        UA/client-hints, order, smuggling
@@ -198,10 +244,16 @@ fightre/            the package (stdlib only)
   deception.py      synthetic payloads, tarpit
   canary.py         tokens + zero-width watermarks
   artifacts.py      build audit
+  native.py         ELF/PE/Mach-O hygiene audit
+  instrumentation.py debugger/Frida self-check
+  manifest.py       signed build inventory
+  stores.py         memory / Redis shared state
+  redis.py          zero-dependency RESP2 client
   client/fightre.js browser attestation
+native/             Android + iOS reference guards, mobile guide
 demo/run_demo.py    live end-to-end scenarios
 docs/               threat model, architecture, deployment, signals
-tests/              102 unit tests
+tests/              145 unit tests
 ```
 
 ## Design principles
@@ -230,9 +282,10 @@ tests/              102 unit tests
 
 ## Roadmap
 
-- Redis-backed nonce/rate stores for multi-worker deployments.
-- Rust/C++ companion for native builds: symbol hygiene, integrity self-checks,
-  Frida/root detection, hardware-backed attestation hooks.
+- ~~Redis-backed nonce/rate stores for multi-worker deployments~~ (0.2.0)
+- ~~native artifact audit, instrumentation self-check, build manifests~~ (0.2.0)
+- Rust/C++ runtime shim for native builds: in-process integrity checks and
+  hardware-attestation plumbing for desktop apps.
 - Per-session response polymorphism: every response carries a different
   watermark, so a single leaked record identifies the session, not just the tenant.
 - Weight auto-tuning from audit logs (false-positive feedback loop).
@@ -249,7 +302,8 @@ security research. See [SECURITY.md](SECURITY.md) and
 - [Threat model](docs/THREAT-MODEL.md) — what REA can do, capability-by-capability
 - [Architecture](docs/ARCHITECTURE.md) — pipeline, scoring, state, extension points
 - [Deployment](docs/DEPLOYMENT.md) — frameworks, edge fingerprints, rollout plan
-- [Signal catalogue](docs/SIGNALS.md) — all 47 signals, generated from code
+- [Signal catalogue](docs/SIGNALS.md) — all 51 signals, generated from code
+- [Native & mobile](native/README.md) — binary audit, self-check, Android/iOS guards
 
 ## License
 

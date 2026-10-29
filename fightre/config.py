@@ -56,6 +56,25 @@ class SecuritySettings:
     cookie_name: str = "fightre_att"
 
 
+@dataclass
+class RedisSettings:
+    """Optional shared state for multi-worker deployments.
+
+    FightRE ships a minimal RESP client, so enabling this needs no extra
+    dependency. When the server is unreachable the stores fall back to local
+    memory and count the failure; see ``fightre/stores.py``.
+    """
+
+    enabled: bool = False
+    host: str = "127.0.0.1"
+    port: int = 6379
+    db: int = 0
+    password: str = ""
+    prefix: str = "fightre"
+    timeout: float = 1.0
+    max_connections: int = 8
+
+
 DEFAULT_BANDS: Dict[str, float] = {
     "allow": 0.0,
     "challenge": 30.0,
@@ -92,6 +111,7 @@ class Config:
     rate: RateSettings = field(default_factory=RateSettings)
     tarpit: TarpitSettings = field(default_factory=TarpitSettings)
     security: SecuritySettings = field(default_factory=SecuritySettings)
+    redis: RedisSettings = field(default_factory=RedisSettings)
     trust_attested: float = 30.0
     trust_signed_client: float = 30.0
     poison_enabled: bool = True
@@ -128,6 +148,7 @@ class Config:
             ("rate", RateSettings),
             ("tarpit", TarpitSettings),
             ("security", SecuritySettings),
+            ("redis", RedisSettings),
         ):
             payload = data.get(section) or {}
             current = getattr(cfg, section)

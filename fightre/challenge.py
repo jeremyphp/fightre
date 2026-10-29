@@ -152,13 +152,21 @@ class Challenge:
 class ChallengeIssuer:
     """Issues and verifies HMAC-signed proof-of-work challenges."""
 
-    def __init__(self, secret: str, ttl_seconds: int = 120, difficulty: int = 18) -> None:
+    def __init__(
+        self,
+        secret: str,
+        ttl_seconds: int = 120,
+        difficulty: int = 18,
+        store: Optional[NonceStore] = None,
+    ) -> None:
         if not secret:
             raise ValueError("challenge secret must not be empty")
         self.secret = secret.encode("utf-8")
         self.ttl = int(ttl_seconds)
         self.difficulty = int(difficulty)
-        self._solved = NonceStore(ttl_seconds=max(self.ttl * 2, 120))
+        self._solved = (
+            store if store is not None else NonceStore(ttl_seconds=max(self.ttl * 2, 120))
+        )
 
     # -- keys --------------------------------------------------------------
     def attest_key(self, jti: str) -> bytes:

@@ -31,12 +31,16 @@ and bypasses the score bands.
 | `proto.ua_client_hints_mismatch` | L2-protocol | 28 |  | User-Agent version/brand contradicts sec-ch-ua hints |
 | `client.attestation_forged` | L3-client | 75 | yes | Attestation signature invalid or replayed |
 | `client.cdp_runtime_leak` | L3-client | 50 |  | Chrome DevTools Protocol artefacts leaked into the page |
+| `client.debugger_attached` | L3-client | 55 |  | A debugger or tracer is attached to the process (TracerPid, sys.gettrace) |
 | `client.devtools_open` | L3-client | 8 |  | DevTools appears to be open (weak, humans do this too) |
 | `client.env_anomaly` | L3-client | 18 |  | Client environment has an unusual but non-decisive property |
 | `client.function_tostring_patched` | L3-client | 42 |  | Native functions were monkey-patched (hook injection) |
 | `client.headless_ua` | L3-client | 45 |  | User-Agent contains a headless/automation marker |
 | `client.honeypot_clicked` | L3-client | 55 |  | Invisible honeypot field was filled by the client |
+| `client.instrumentation_detected` | L3-client | 70 |  | Dynamic instrumentation agent found in process memory (Frida/gum) |
 | `client.missing_attestation` | L3-client | 16 |  | Browser claim without a valid FightRE attestation |
+| `client.preload_hijack` | L3-client | 45 |  | Library preload or injected extension is active (LD_PRELOAD, DYLD_INSERT) |
+| `client.root_or_jailbreak` | L3-client | 35 |  | Device is rooted/jailbroken, weakening every client-side control |
 | `client.signal_inconsistency` | L3-client | 36 |  | Client environment signals contradict each other |
 | `client.software_renderer` | L3-client | 30 |  | WebGL renderer is a software rasterizer (SwiftShader/llvmpipe) |
 | `client.stale_attestation` | L3-client | 20 |  | Attestation older than the freshness window |
@@ -60,4 +64,4 @@ and bypasses the score bands.
 | `data.field_tamper` | L5-data | 38 |  | Client-side field integrity check failed |
 | `data.watermark_leak` | L5-data | 60 | yes | Leaked document carries our zero-width watermark |
 
-_47 signals across 5 layers._
+_51 signals across 5 layers._

@@ -197,6 +197,107 @@ def cmd_keygen(_args: argparse.Namespace) -> int:
 
 
 # --------------------------------------------------------------------------
+# native
+# --------------------------------------------------------------------------
+def cmd_native(args: argparse.Namespace) -> int:
+    from . import native
+
+    report = native.audit_paths(args.paths, max_files=args.max_files)
+    if args.markdown:
+        target = args.out or "fightre-native.md"
+        with open(target, "w", encoding="utf-8") as handle:
+            handle.write(report.to_markdown())
+        print(f"markdown report written to {target}")
+    if args.json:
+        print(json.dumps(report.as_dict(), indent=2, ensure_ascii=False))
+    else:
+        print(f"FightRE native audit - {report.root}")
+        print(f"  binaries : {len(report.binaries)} (skipped {report.skipped})")
+        print(f"  score    : {report.score}/100 (worst binary)")
+        if report.binaries:
+            print()
+            print(f"  {'binary':<34} {'arch':<10} {'strip':<6} {'dwarf':<6} {'pie':<4} {'nx':<4} {'relro':<6} score")
+            for binary in report.binaries:
+                h = binary.hardening
+                label = binary.path if len(binary.path) <= 34 else "..." + binary.path[-31:]
+                print(
+                    f"  {label:<34} {binary.arch:<10} "
+                    f"{_flag(h.get('symbols_stripped')):<6} {_flag(h.get('debug_info_removed')):<6} "
+                    f"{_flag(h.get('pie')):<4} {_flag(h.get('nx')):<4} "
+                    f"{_flag(h.get('relro')):<6} {binary.score}"
+                )
+            for binary in report.binaries:
+                for finding in binary.findings:
+                    print(f"\n  [{finding.severity.upper():8}] {finding.rule:14} {binary.path}")
+                    print(f"             {finding.detail}")
+                    print(f"             fix: {finding.fix}")
+    return 1 if report.score >= args.fail_over else 0
+
+
+def _flag(value: object) -> str:
+    if value is None:
+        return "?"
+    return "yes" if value else "no"
+
+
+# --------------------------------------------------------------------------
+# selfcheck
+# --------------------------------------------------------------------------
+def cmd_selfcheck(args: argparse.Namespace) -> int:
+    from . import instrumentation
+
+    checks = instrumentation.collect(probe_ports=not args.no_ports)
+    summary = instrumentation.summarize(checks)
+    if args.json:
+        print(json.dumps({"summary": summary, "checks": [c.as_dict() for c in checks]}, indent=2))
+    else:
+        for check in checks:
+            print(f"  {'PASS' if check.ok else 'FAIL'}  {check.name:20} {check.detail}")
+        print()
+        print("clean" if summary["clean"] else f"{len(summary['failed'])} check(s) failed")
+    if args.strict and not summary["clean"]:
+        return 1
+    return 0
+
+
+# --------------------------------------------------------------------------
+# manifest
+# --------------------------------------------------------------------------
+def cmd_manifest(args: argparse.Namespace) -> int:
+    from . import manifest as mf
+
+    secret = args.secret or os.environ.get("FIGHTRE_MANIFEST_SECRET", "")
+    if not secret:
+        print("error: pass --secret or set FIGHTRE_MANIFEST_SECRET", file=sys.stderr)
+        return 2
+
+    if args.action == "sign":
+        built = mf.build_manifest(args.target)
+        mf.sign(built, args.key_id, secret)
+        target = args.out or os.path.join(args.target, "build.manifest.json")
+        built.save(target)
+        print(f"signed {len(built.entries)} entries -> {target}")
+        return 0
+
+    result = mf.verify_file(args.target, root=args.root, secret=secret)
+    print(json.dumps(result.as_dict(), indent=2))
+    return 0 if result.ok else 1
+
+
+# --------------------------------------------------------------------------
+# stores
+# --------------------------------------------------------------------------
+def cmd_stores(args: argparse.Namespace) -> int:
+    from .stores import build_stores
+
+    config = Config.load(args.config)
+    stores = build_stores(config, config.resolve_secret())
+    health = stores.health()
+    print(json.dumps(health, indent=2))
+    return 0 if health.get("ok") else 1
+
+
+# --------------------------------------------------------------------------
 # edge-sign
 # --------------------------------------------------------------------------
 def cmd_edge_sign(args: argparse.Namespace) -> int:
@@ -284,6 +385,34 @@ def build_parser() -> argparse.ArgumentParser:
     audit.add_argument("--fail-over", type=float, default=100.0,
                        help="exit non-zero when the score reaches this value")
     audit.set_defaults(func=cmd_audit)
+
+    native_p = sub.add_parser("native", help="audit ELF/PE/Mach-O hardening and symbols")
+    native_p.add_argument("paths", nargs="+")
+    native_p.add_argument("--json", action="store_true")
+    native_p.add_argument("--markdown", action="store_true")
+    native_p.add_argument("--out", default=None)
+    native_p.add_argument("--max-files", type=int, default=20_000)
+    native_p.add_argument("--fail-over", type=float, default=100.0)
+    native_p.set_defaults(func=cmd_native)
+
+    selfcheck = sub.add_parser("selfcheck", help="check this process for debuggers/instrumentation")
+    selfcheck.add_argument("--json", action="store_true")
+    selfcheck.add_argument("--strict", action="store_true")
+    selfcheck.add_argument("--no-ports", action="store_true")
+    selfcheck.set_defaults(func=cmd_selfcheck)
+
+    man = sub.add_parser("manifest", help="sign or verify a build manifest")
+    man.add_argument("action", choices=["sign", "verify"])
+    man.add_argument("target", help="directory to sign, or manifest file to verify")
+    man.add_argument("--key-id", default="release")
+    man.add_argument("--secret", default="")
+    man.add_argument("--out", default=None)
+    man.add_argument("--root", default=None)
+    man.set_defaults(func=cmd_manifest)
+
+    stores = sub.add_parser("stores", help="check the shared-state backend")
+    stores.add_argument("--config", default=None)
+    stores.set_defaults(func=cmd_stores)
 
     sig = sub.add_parser("signals", help="list the signal catalogue")
     sig.add_argument("--json", action="store_true")

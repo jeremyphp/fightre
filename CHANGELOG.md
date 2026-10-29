@@ -4,6 +4,39 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-10-29
+
+### Added
+
+- **Shared state for multi-worker deployments**: a zero-dependency RESP2 client
+  (`fightre/redis.py`) and Redis-backed nonce, rate-limit, canary and
+  path-diversity stores (`fightre/stores.py`). Every store degrades to its local
+  twin when the server is unreachable, and counts the failure.
+- **Native binary audit** (`fightre native`): parses ELF, PE and Mach-O headers
+  and reports symbol tables, DWARF/PDB leakage, missing PIE/NX/RELRO/CFG, with a
+  per-binary exposure score.
+- **Runtime self-check** (`fightre selfcheck`): detects attached debuggers
+  (`TracerPid`, `sys.gettrace`), Frida agents in process maps and default ports,
+  and library preload hijacks. Failures map to the same signal catalogue.
+- **Signed build manifests** (`fightre manifest sign|verify`): tamper detection
+  for distributed builds (modified, missing, added files).
+- **Android and iOS reference guards** (`native/android`, `native/ios`) with
+  root/jailbreak, Frida, debugger, emulator and hook-framework checks, plus
+  Play Integrity / App Attest interfaces.
+- New client signals: `client.debugger_attached`,
+  `client.instrumentation_detected`, `client.preload_hijack`,
+  `client.root_or_jailbreak`.
+- `fightre stores` connectivity command; `--json`/`--markdown` output for native
+  audit; `manifest verify` exits non-zero on tamper.
+- 43 new tests (145 total), including an in-process fake Redis server.
+
+### Changed
+
+- `Guard` now accepts a `Stores` bundle; challenges and request signatures share
+  the same configured nonce backend.
+- WSGI keeps `raw_pairs` empty (no header order available), so L2 ordering never
+  fires there by accident.
+
 ## [0.1.0] - 2026-10-29
 
 ### Added
