@@ -1,0 +1,65 @@
+name: Bug report
+description: Something behaved incorrectly — a false positive, a bypass, a crash
+title: "[bug] "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please do **not** include secrets, tokens or real
+        customer data. For security-sensitive bypasses, use the private advisory
+        flow described in SECURITY.md instead of a public issue.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Actual behaviour, and what you expected instead.
+      placeholder: A clean Chrome session was challenged three times in a row...
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Command, config fragment, or request/response pair.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: FightRE version
+      placeholder: "0.2.0 (python -m fightre --version)"
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - ASGI middleware
+        - WSGI middleware
+        - Browser client (fightre.js)
+        - Redis stores
+        - Artifact audit
+        - Native audit
+        - Self-check / manifest
+        - CLI
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: audit
+    attributes:
+      label: Audit line (optional)
+      description: The relevant JSONL line from your audit log. Identities are already salted.
+      render: json
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmations
+      options:
+        - label: I am testing software I own or operate.
+          required: true
+        - label: This report contains no real credentials or personal data.
+          required: true

@@ -29,3 +29,7 @@ build.manifest.json
 .DS_Store
 Thumbs.db
 *.swp
+
+# local credentials (never commit)
+github.txt
+

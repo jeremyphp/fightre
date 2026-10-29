@@ -32,6 +32,8 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- Project license is now **Apache-2.0** (patent grant, patent retaliation and
+  trademark clauses) instead of MIT; see `LICENSE` and `NOTICE`.
 - `Guard` now accepts a `Stores` bundle; challenges and request signatures share
   the same configured nonce backend.
 - WSGI keeps `raw_pairs` empty (no header order available), so L2 ordering never

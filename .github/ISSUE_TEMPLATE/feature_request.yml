@@ -1,0 +1,61 @@
+name: Detector proposal
+description: Propose a new signal, or a change to an existing weight
+title: "[detector] "
+labels: ["detector", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Detectors are data, not code paths: a `SignalSpec`, an emitter, and a test.
+        See CONTRIBUTING.md. Weights are evidence probabilities, not severities.
+  - type: input
+    id: name
+    attributes:
+      label: Signal name
+      description: Follow the existing namespaces (`net.*`, `proto.*`, `client.*`, `app.*`, `data.*`).
+      placeholder: proto.quic_http3_claim
+    validations:
+      required: true
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Layer
+      options:
+        - L1 network
+        - L2 protocol
+        - L3 client
+        - L4 application
+        - L5 data
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: What does it observe?
+      description: The concrete request/response fact, and why a legitimate client cannot produce it.
+    validations:
+      required: true
+  - type: input
+    id: falsepos
+    attributes:
+      label: Known false positives
+      description: Which legitimate clients could trip this? (old browsers, proxies, accessibility tools)
+    validations:
+      required: true
+  - type: input
+    id: weight
+    attributes:
+      label: Proposed weight (0-100)
+      description: "If this were the only signal you saw, how sure are you? Example: 35"
+      placeholder: "35"
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmations
+      options:
+        - label: The signal is derived from data the server already receives.
+          required: true
+        - label: It survives disclosure of this repository (no obscurity assumption).
+          required: true

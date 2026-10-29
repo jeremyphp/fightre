@@ -3,14 +3,13 @@
 **Five-layer anti-reverse-engineering defence for web services — built for the age of AI agents.**
 
 [![ci](https://github.com/your-org/fightre/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/fightre/actions/workflows/ci.yml)
-[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![license: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
 [![dependencies](https://img.shields.io/badge/runtime%20dependencies-0-success.svg)](pyproject.toml)
 
-REA ("Reverse Engineer Anything") turned reverse engineering into an agent
-workflow: an MCP server that puts Ghidra, IDA, Frida, JADX, Playwright,
-mitmproxy and an LLM in one loop. It runs locally, it never uploads your binary,
-and it produces an evidence chain that a model turns into working code.
+REA showed how quickly an LLM with the right toolchain can take software apart.
+FightRE is the defence layer built for that world: it raises the cost of every
+verified fact, poisons the evidence chain, and makes anything extracted traceable.
 
 You cannot make a binary unreadable on someone else's machine. What you *can* do
 is make the extraction expensive, make the automation contradict itself, and
@@ -19,6 +18,10 @@ make anything that leaks traceable back to the session that leaked it.
 FightRE is that, as one small Python package with **zero runtime dependencies**
 and a browser client, plus a build audit that tells you what an agent would
 harvest from your artifact in five minutes.
+
+**Jump to:** [Background](#background-what-rea-actually-is) ·
+[What it does](#what-fightre-does-about-it) · [Demo](#see-it-work) ·
+[Quick start](#install-and-integrate) · [Docs](#documentation)
 
 ```
 $ fightre serve            # guarded demo service
@@ -30,6 +33,42 @@ $ fightre selftest         # verify the crypto primitives
 ```
 
 ---
+
+## Background: what REA actually is
+
+In October 2026 a project called REA ("Reverse Engineer Anything") reached
+roughly **70–80k stars in three days** and topped GitHub Trending. It is not a
+disassembler. It is an **MCP server that lets an LLM drive a complete RE
+toolchain** — Ghidra, IDA, Hopper, JEB, Rizin, JADX, Frida, GDB, Playwright,
+Chrome DevTools Protocol, mitmproxy, tshark, binwalk — and records every
+observation as *evidence* with confidence and provenance.
+
+Three properties explain the impact:
+
+1. **It runs locally.** The target is never uploaded, so there is no cloud-side
+   point where a vendor could detect "this binary is being reversed". Defence has
+   to live inside your artifact, your protocol, your service and your data.
+2. **Expertise stops being the bottleneck.** You state the goal in English; the
+   agent selects engines, correlates findings and writes the narrative.
+3. **The output is semantic.** It returns "this is how the clipboard bridge
+   works" plus citations, not a wall of assembly — and it carries an obligation
+   ledger of what is still unproven.
+
+That third property is also its weakness: **the agent is only as good as the
+evidence it can collect.** Poison the evidence and the reconstruction is
+confidently wrong.
+
+Deep dive on the pipeline and its seams: **[docs/REA.md](docs/REA.md)**.
+
+## What FightRE does about it
+
+| Seam | Why it is exploitable | FightRE |
+| --- | --- | --- |
+| **Cost per verified fact** | every fact costs a tool call, a token budget and wall time | proof-of-work challenge, per-identity budgets, bounded tarpits |
+| **Evidence consistency** | the agent trusts what it observes and cites it | fabricated OpenAPI + decoy endpoints with plausible-but-wrong data |
+| **Provenance** | extracted records travel into reports, repos and datasets | canary tokens, zero-width watermarks, cross-worker attribution |
+| **What ships** | symbols, maps, schemas and secrets are free analysis input | `fightre audit`, `fightre native`, signed build manifests |
+| **Where the truth lives** | client code is readable; server code is not | attested sessions gate the logic that actually matters |
 
 ## The idea in one table
 
@@ -277,8 +316,9 @@ tests/              145 unit tests
 - Signals are heuristics. Tune weights against your own traffic; expect false
   positives on unusual-but-legitimate clients (old browsers, corporate proxies,
   accessibility tooling).
-- Rate limits and replay stores are per process. Multi-worker deployments need
-  sticky sessions or a shared store ([docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#8-capacity-and-shared-state)).
+- Rate limits, replay defence and canary attribution are per process unless
+  `redis.enabled` is set; without shared state, multi-worker deployments need
+  sticky sessions ([docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#8-capacity-and-shared-state)).
 
 ## Roadmap
 
@@ -299,15 +339,22 @@ security research. See [SECURITY.md](SECURITY.md) and
 
 ## Documentation
 
+- [REA explained](docs/REA.md) — the pipeline, its four capability jumps, the seams
 - [Threat model](docs/THREAT-MODEL.md) — what REA can do, capability-by-capability
 - [Architecture](docs/ARCHITECTURE.md) — pipeline, scoring, state, extension points
 - [Deployment](docs/DEPLOYMENT.md) — frameworks, edge fingerprints, rollout plan
 - [Signal catalogue](docs/SIGNALS.md) — all 51 signals, generated from code
+- [FAQ](docs/FAQ.md) — DRM, legality, false positives, licensing
 - [Native & mobile](native/README.md) — binary audit, self-check, Android/iOS guards
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Apache-2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+We chose Apache-2.0 over MIT for a practical reason: it carries an explicit
+patent grant and a patent-retaliation clause. A security component that companies
+embed in production should not leave patent risk ambiguous, and the trademark
+clause stops the name from being used to endorse a fork.
 
 ---
 

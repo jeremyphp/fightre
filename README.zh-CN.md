@@ -3,7 +3,7 @@
 **面向 AI Agent 时代的五层反逆向工程防御组件 —— 零运行时依赖。**
 
 [![ci](https://github.com/your-org/fightre/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/fightre/actions/workflows/ci.yml)
-[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![license: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
 
 REA（Reverse Engineer Anything）把逆向工程变成了一条 Agent 流水线：一个 MCP
@@ -23,6 +23,36 @@ $ fightre selfcheck        # 当前进程是否被调试器/Frida 插桩？
 $ fightre manifest sign ./dist --out build.manifest.json
 $ fightre selftest         # 校验密码学原语
 ```
+
+## 背景：REA 为什么火
+
+2026 年 10 月，REA（Reverse Engineer Anything）三天涨了约 **7–8 万 Star**，登顶
+GitHub Trending。它不是新的反汇编器，而是**一个让大模型驱动完整逆向工具链的 MCP
+服务**：Ghidra、IDA、Hopper、JEB、Rizin、JADX、Frida、GDB、Playwright、CDP、
+mitmproxy、tshark、binwalk 全在它的工具目录里，每条观察都记成带置信度与来源的**证据**。
+
+三个性质决定了它的冲击力：
+
+1. **本地运行**：样本从不上传，云端没有"这个二进制正在被逆向"的检测点。防御只能
+   做在你的产物、协议、服务和数据里。
+2. **经验不再是瓶颈**：你说目标，Agent 自己挑引擎、串证据、写结论。
+3. **输出是语义化的**：它给你的不是一屏汇编，而是"剪贴板桥接是这么做的"加引用，
+   还附一份"哪些仍未证实"的清单。
+
+而第三点正是它的软肋：**Agent 只和它能收集到的证据一样强。** 喂它错证据，它就会
+自信地写出错误的重构。
+
+完整原理拆解见 **[docs/REA.md](docs/REA.md)**。
+
+## 我针对它做了什么
+
+| 攻击面 | 为什么可打 | FightRE 的做法 |
+| --- | --- | --- |
+| **每条已证实事实的成本** | 每条结论都要 Tool 调用、Token 和等待时间 | 工作量证明挑战、按身份的预算、有上限的 tarpit |
+| **证据一致性** | Agent 相信自己观测到并引用的东西 | 伪造的 OpenAPI + 诱饵端点，返回可信但错误的数据 |
+| **可追溯性** | 被拿走的记录会进入报告、仓库、数据集 | 金丝雀令牌、零宽水印、跨 worker 归因 |
+| **你发出去的东西** | 符号、source map、schema、密钥都是免费的分析输入 | `fightre audit`、`fightre native`、签名构建清单 |
+| **真相放在哪** | 客户端代码可读，服务端不可读 | 用证明过的会话守住真正值钱的逻辑 |
 
 ## 一句话看懂五层
 
@@ -247,7 +277,8 @@ tests/              145 个单元测试
 - 证明只能说明"有个像浏览器的运行时执行了我们的 JS"，不能说明对面是人。
 - 信号都是启发式。请用你自己的流量调权重，并预期老浏览器、企业代理、无障碍工具
   带来的误报。
-- 速率限制与重放存储是进程内的。多 worker 需要会话粘滞或共享存储。
+- 速率限制、防重放与金丝雀归因默认是进程内的；打开 `redis.enabled` 才跨 worker。
+  没有共享存储时，多 worker 需要会话粘滞。
 
 ## 路线图
 
@@ -273,4 +304,8 @@ FightRE 用于保护你拥有或运营的软件。不得用于干扰他人的工
 
 ## 许可
 
-MIT，见 [LICENSE](LICENSE)。
+Apache-2.0，见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
+
+选 Apache-2.0 而不是 MIT 的理由很实际：它包含明确的专利授权与专利报复条款。一个会被
+企业嵌入生产环境的安全组件，不应在专利风险上留下模糊空间；商标条款也避免有人拿项目
+名字为分叉背书。
