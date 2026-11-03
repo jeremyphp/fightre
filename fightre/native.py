@@ -17,7 +17,7 @@ import os
 import re
 import struct
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 SEVERITY_WEIGHTS = {"critical": 45.0, "high": 22.0, "medium": 9.0, "low": 3.0}
 SEVERITY_ORDER = ("critical", "high", "medium", "low")

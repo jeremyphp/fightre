@@ -25,7 +25,7 @@ import secrets
 import threading
 import time
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, List, Optional
 
 CANARY_PREFIX = "cnry_"
 TOKEN_RE = re.compile(r"cnry_[0-9a-f]{32}")

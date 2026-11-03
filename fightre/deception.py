@@ -18,8 +18,6 @@ from __future__ import annotations
 
 import random
 import secrets
-import time
-from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 from .canary import CanaryRegistry, embed

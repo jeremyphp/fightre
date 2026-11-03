@@ -60,7 +60,7 @@ def leading_zero_bits(digest: bytes) -> int:
 
 
 def pow_digest(seed: str, nonce: int) -> bytes:
-    return hashlib.sha256(f"{seed}:{nonce}".encode("utf-8")).digest()
+    return hashlib.sha256(f"{seed}:{nonce}".encode()).digest()
 
 
 def pow_matches(seed: str, nonce: int, difficulty: int) -> bool:
@@ -171,7 +171,7 @@ class ChallengeIssuer:
     # -- keys --------------------------------------------------------------
     def attest_key(self, jti: str) -> bytes:
         """Per-challenge key handed to the client to sign its attestation."""
-        return hmac.new(self.secret, f"attest:{jti}".encode("utf-8"), hashlib.sha256).digest()
+        return hmac.new(self.secret, f"attest:{jti}".encode(), hashlib.sha256).digest()
 
     # -- issue -------------------------------------------------------------
     def issue(self, subject: str = "anon", difficulty: Optional[int] = None,

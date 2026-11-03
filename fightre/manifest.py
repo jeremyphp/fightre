@@ -20,7 +20,7 @@ import json
 import os
 import time
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence
 
 MANIFEST_VERSION = 1
 _CHUNK = 1024 * 1024
@@ -83,7 +83,7 @@ class Manifest:
 
     @classmethod
     def load(cls, path: str) -> "Manifest":
-        with open(path, "r", encoding="utf-8") as handle:
+        with open(path, encoding="utf-8") as handle:
             return cls.from_dict(json.load(handle))
 
     def save(self, path: str) -> None:

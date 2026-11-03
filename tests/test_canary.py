@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from fightre.canary import CanaryRegistry, TOKEN_RE, embed, extract, fingerprint_of, strip
+from fightre.canary import TOKEN_RE, CanaryRegistry, embed, extract, fingerprint_of, strip
 
 
 class CanaryTests(unittest.TestCase):

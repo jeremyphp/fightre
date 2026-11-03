@@ -24,7 +24,7 @@ import hashlib
 import hmac
 import re
 import time
-from typing import Iterable, List, Optional, Sequence, Tuple
+from typing import Iterable, Optional, Sequence
 
 EDGE_VERSION = "edge1"
 _HEX32 = re.compile(r"^[0-9a-f]{32}$")

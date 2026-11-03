@@ -22,10 +22,10 @@ import json
 import threading
 import time
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Deque, Dict, List, Optional, Tuple
 
-from .canary import Canary, CanaryRegistry, TOKEN_RE
+from .canary import TOKEN_RE, Canary, CanaryRegistry
 from .challenge import NonceStore
 from .config import Config
 from .ratelimit import RateLimiter

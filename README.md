@@ -2,7 +2,7 @@
 
 **Five-layer anti-reverse-engineering defence for web services — built for the age of AI agents.**
 
-[![ci](https://github.com/your-org/fightre/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/fightre/actions/workflows/ci.yml)
+[![ci](https://github.com/jeremyphp/fightre/actions/workflows/ci.yml/badge.svg)](https://github.com/jeremyphp/fightre/actions/workflows/ci.yml)
 [![license: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
 [![dependencies](https://img.shields.io/badge/runtime%20dependencies-0-success.svg)](pyproject.toml)
@@ -143,7 +143,7 @@ usually shipped by accident:
 
 ```
 $ fightre audit examples/leaky-dist
-FightRE artifact audit - E:\fightrea\examples\leaky-dist
+FightRE artifact audit - examples/leaky-dist
   exposure : 88.3/100 - an agent would reconstruct this service quickly
   files    : 5 (1.1 KiB)
   severity : critical=2  high=3  medium=1  low=1
@@ -339,6 +339,7 @@ security research. See [SECURITY.md](SECURITY.md) and
 
 ## Documentation
 
+- [Design rationale](docs/DESIGN-RATIONALE.md) — why each layer exists, what it can and cannot conclude, and what it costs
 - [REA explained](docs/REA.md) — the pipeline, its four capability jumps, the seams
 - [Threat model](docs/THREAT-MODEL.md) — what REA can do, capability-by-capability
 - [Architecture](docs/ARCHITECTURE.md) — pipeline, scoring, state, extension points
@@ -349,12 +350,33 @@ security research. See [SECURITY.md](SECURITY.md) and
 
 ## License
 
-Apache-2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
+**Apache-2.0** — see [LICENSE](LICENSE), [NOTICE](NOTICE) and
+[TRADEMARK.md](TRADEMARK.md).
 
-We chose Apache-2.0 over MIT for a practical reason: it carries an explicit
-patent grant and a patent-retaliation clause. A security component that companies
-embed in production should not leave patent risk ambiguous, and the trademark
-clause stops the name from being used to endorse a fork.
+Use it commercially, embed it, fork it, ship it inside a product. No fees, no
+copyleft, no permission to ask.
+
+We chose Apache-2.0 over MIT for one practical reason: **the patent grant.** MIT is
+silent on patents, so a company embedding this in a product cannot answer the
+question their counsel will ask — "what if a contributor later asserts a patent?".
+Apache-2.0 §3 answers it, and the retaliation clause makes the answer enforceable.
+For a component that sits in the request path of a production service, that is the
+difference between "can adopt" and "cannot adopt".
+
+We deliberately did **not** choose AGPL or a source-available licence. The value of
+a defensive component is in being deployed widely and attacked publicly; a licence
+that keeps enterprises out would remove exactly the feedback this project needs.
+See [docs/DESIGN-RATIONALE.md](docs/DESIGN-RATIONALE.md) for the same reasoning
+applied to the design itself.
+
+Contributions use the [Developer Certificate of Origin](CONTRIBUTING.md#sign-off-dco)
+(`git commit -s`), not a CLA.
+
+| Need | Where |
+|---|---|
+| Community help | [SUPPORT.md](SUPPORT.md), Discussions |
+| Commercial support / private deployment | [SUPPORT.md](SUPPORT.md) |
+| Name and logo usage | [TRADEMARK.md](TRADEMARK.md) |
 
 ---
 

@@ -36,9 +36,9 @@ dependencies = []
 dev = ["pytest>=7.0", "ruff>=0.5"]
 
 [project.urls]
-Homepage = "https://github.com/your-org/fightre"
-Documentation = "https://github.com/your-org/fightre/tree/main/docs"
-"Bug Tracker" = "https://github.com/your-org/fightre/issues"
+Homepage = "https://github.com/jeremyphp/fightre"
+Documentation = "https://github.com/jeremyphp/fightre/tree/main/docs"
+"Bug Tracker" = "https://github.com/jeremyphp/fightre/issues"
 
 [project.scripts]
 fightre = "fightre.cli:main"
@@ -55,4 +55,11 @@ target-version = "py39"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B"]
-ignore = ["E501"]
+# E501: long lines are handled by review, not by a hard limit in a security codebase
+#       where log/verdict strings are often long.
+# UP006/UP035/UP037/UP045: the package targets Python 3.9 for runtime compatibility.
+#       Rewriting `typing.Dict` -> `dict` and `Optional[X]` -> `X | None` across the
+#       codebase is a stylistic change with no runtime effect under
+#       `from __future__ import annotations`, and the diff would obscure review of
+#       actual security logic. Revisit when the minimum version becomes 3.10.
+ignore = ["E501", "UP006", "UP035", "UP037", "UP045"]

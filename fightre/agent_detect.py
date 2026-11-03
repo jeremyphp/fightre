@@ -17,9 +17,8 @@ policy prefers challenge/deception over a hard block.
 
 from __future__ import annotations
 
-import json
 import re
-from typing import Dict, Iterable, List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence
 
 from . import signals as sig
 from .signals import Signal

@@ -54,7 +54,7 @@ class Check:
 
 def _read(path: str, limit: int = 262_144) -> str:
     try:
-        with open(path, "r", encoding="utf-8", errors="ignore") as handle:
+        with open(path, encoding="utf-8", errors="ignore") as handle:
             return handle.read(limit)
     except OSError:
         return ""

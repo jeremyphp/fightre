@@ -10,7 +10,7 @@ from __future__ import annotations
 import io
 import time
 import uuid
-from typing import Callable, Dict, Iterable, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 from .config import Config
 from .guard import Guard, Request, Response

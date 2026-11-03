@@ -2,7 +2,7 @@
 
 **面向 AI Agent 时代的五层反逆向工程防御组件 —— 零运行时依赖。**
 
-[![ci](https://github.com/your-org/fightre/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/fightre/actions/workflows/ci.yml)
+[![ci](https://github.com/jeremyphp/fightre/actions/workflows/ci.yml/badge.svg)](https://github.com/jeremyphp/fightre/actions/workflows/ci.yml)
 [![license: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![python](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
 
@@ -117,7 +117,7 @@ POST /api/v2/admin/impersonate -> 管理员会话令牌（canary）
 
 ```
 $ fightre audit examples/leaky-dist
-FightRE artifact audit - E:\fightrea\examples\leaky-dist
+FightRE artifact audit - examples/leaky-dist
   exposure : 88.3/100 - an agent would reconstruct this service quickly
   files    : 5 (1.1 KiB)
   severity : critical=2  high=3  medium=1  low=1
@@ -296,6 +296,7 @@ FightRE 用于保护你拥有或运营的软件。不得用于干扰他人的工
 
 ## 文档
 
+- [设计说明](docs/DESIGN-RATIONALE.md)：每一层为什么存在、能看到什么、代价是什么
 - [威胁模型](docs/THREAT-MODEL.md)：REA 能做什么，逐项对应
 - [架构](docs/ARCHITECTURE.md)：流水线、评分、状态、扩展点
 - [部署](docs/DEPLOYMENT.md)：框架接入、边缘指纹、灰度上线
@@ -304,8 +305,22 @@ FightRE 用于保护你拥有或运营的软件。不得用于干扰他人的工
 
 ## 许可
 
-Apache-2.0，见 [LICENSE](LICENSE) 与 [NOTICE](NOTICE)。
+**Apache-2.0** —— 见 [LICENSE](LICENSE)、[NOTICE](NOTICE)、[TRADEMARK.md](TRADEMARK.md)。
 
-选 Apache-2.0 而不是 MIT 的理由很实际：它包含明确的专利授权与专利报复条款。一个会被
-企业嵌入生产环境的安全组件，不应在专利风险上留下模糊空间；商标条款也避免有人拿项目
-名字为分叉背书。
+可以商用、可以嵌入、可以 fork、可以打包进你的产品。不收费、不传染、不用问。
+
+选 Apache-2.0 而不是 MIT，只为一个实际原因：**专利授权**。MIT 对专利只字未提，
+企业把它装进产品时，法务会问"如果贡献者后来拿专利起诉我们怎么办"——MIT 回答不了，
+Apache-2.0 §3 回答得了，而且有专利反制条款兜底。对一个跑在生产链路里的组件，
+这就是"能用"和"不能用"的差别。
+
+我们刻意**没有**选 AGPL 或 source-available。防御组件的价值在于被广泛部署、被公开
+攻击；一个把企业挡在门外的协议，会把本项目最需要的反馈也挡在门外。
+
+贡献采用 [DCO](CONTRIBUTING.md#sign-off-dco)（`git commit -s`），不用 CLA。
+
+| 需要什么 | 去哪 |
+|---|---|
+| 社区帮助 | [SUPPORT.md](SUPPORT.md)、Discussions |
+| 商业支持 / 私有部署 | [SUPPORT.md](SUPPORT.md) |
+| 名称与标识使用 | [TRADEMARK.md](TRADEMARK.md) |

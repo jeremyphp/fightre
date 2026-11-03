@@ -17,11 +17,11 @@ from typing import Dict, List, Optional, Tuple
 from . import headers as header_rules
 from . import signals as sig
 from .agent_detect import analyze as analyze_agent
-from .attest import AttestResult, AttestationVerifier
+from .attest import AttestationVerifier, AttestResult
 from .challenge import ChallengeIssuer
 from .config import Config
-from .decoy import DecoyFabric
 from .deception import Decepter
+from .decoy import DecoyFabric
 from .fingerprint import known_blocked, normalize_ja3, verify_edge_signature
 from .policy import Action, Decision, Policy
 from .report import AuditLog

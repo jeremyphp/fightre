@@ -11,7 +11,7 @@ from __future__ import annotations
 import socket
 import threading
 import time
-from typing import Dict, Optional, Set, Tuple
+from typing import Dict, Optional, Set
 
 
 def _read_line(handle) -> Optional[bytes]:

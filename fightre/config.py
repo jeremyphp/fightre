@@ -162,7 +162,7 @@ class Config:
         path = path or os.environ.get("FIGHTRE_CONFIG", "")
         if not path:
             return cls()
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, encoding="utf-8") as fh:
             return cls.from_dict(json.load(fh))
 
     def to_dict(self) -> Dict[str, Any]:

@@ -13,7 +13,6 @@ uploads, mount FightRE on the API routes only.
 from __future__ import annotations
 
 import asyncio
-import time
 import uuid
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple
 

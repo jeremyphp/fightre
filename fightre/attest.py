@@ -9,7 +9,6 @@ discount on suspicion, never as a free pass.
 
 from __future__ import annotations
 
-import base64
 import hashlib
 import hmac
 import json
@@ -105,7 +104,7 @@ class AttestationVerifier:
         self.trust = float(trust)
 
     def key_for(self, jti: str) -> bytes:
-        return hmac.new(self.secret, f"attest:{jti}".encode("utf-8"), hashlib.sha256).digest()
+        return hmac.new(self.secret, f"attest:{jti}".encode(), hashlib.sha256).digest()
 
     # -- producer (used by tests and the demo client; the browser does the same)
     def build(self, jti: str, env: Dict[str, object], now: Optional[float] = None) -> str:

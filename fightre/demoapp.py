@@ -6,7 +6,6 @@ HTTP exchanges instead of screenshots.
 
 from __future__ import annotations
 
-import json
 import os
 from typing import Callable, Dict, List, Tuple
 

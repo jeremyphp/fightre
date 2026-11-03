@@ -33,3 +33,5 @@ Thumbs.db
 # local credentials (never commit)
 github.txt
 
+# internal release material (strategy, channel playbooks) — not published
+launch/

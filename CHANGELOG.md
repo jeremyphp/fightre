@@ -66,4 +66,4 @@ All notable changes to this project are documented here. The format follows
 - ASGI and WSGI middleware, demo service, end-to-end demo script, 102 unit
   tests, CI workflow.
 
-[0.1.0]: https://github.com/your-org/fightre/releases/tag/v0.1.0
+[0.1.0]: https://github.com/jeremyphp/fightre/releases/tag/v0.1.0

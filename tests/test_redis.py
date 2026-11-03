@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import sys
-import time
 import unittest
 
 from fightre.canary import CanaryRegistry

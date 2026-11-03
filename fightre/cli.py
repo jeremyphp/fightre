@@ -132,12 +132,12 @@ def cmd_signals(args: argparse.Namespace) -> int:
 # selftest
 # --------------------------------------------------------------------------
 def cmd_selftest(_args: argparse.Namespace) -> int:
+    from . import signals as sig
     from .attest import AttestationVerifier
     from .canary import CanaryRegistry, embed, extract
     from .challenge import ChallengeIssuer, pow_matches, solve_pow
     from .policy import Action, Policy
     from .scoring import RiskEngine
-    from . import signals as sig
 
     checks: List[str] = []
     failures: List[str] = []
@@ -323,7 +323,7 @@ def cmd_explain(args: argparse.Namespace) -> int:
     signals: Dict[str, int] = {}
     total = 0
     tail: List[dict] = []
-    with open(args.path, "r", encoding="utf-8") as fh:
+    with open(args.path, encoding="utf-8") as fh:
         for line in fh:
             line = line.strip()
             if not line:

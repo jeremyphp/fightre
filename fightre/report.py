@@ -18,7 +18,7 @@ import secrets
 import time
 from collections import Counter, deque
 from dataclasses import dataclass, field
-from typing import Deque, Dict, Iterable, List, Optional
+from typing import Deque, Dict, List, Optional
 
 from .policy import Decision
 from .scoring import RiskReport

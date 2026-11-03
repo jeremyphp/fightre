@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import random
 import secrets
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 from .canary import CanaryRegistry, embed
