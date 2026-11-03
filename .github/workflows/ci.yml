@@ -36,9 +36,9 @@ jobs:
       - name: Manifest round-trip
         run: |
           python -m fightre manifest sign examples/leaky-dist --secret ci-secret --out /tmp/manifest.json
-          python -m fightre manifest verify /tmp/manifest.json --root examples/leaky-dist
+          python -m fightre manifest verify /tmp/manifest.json --root examples/leaky-dist --secret ci-secret
           echo tamper >> examples/leaky-dist/config.json
-          if python -m fightre manifest verify /tmp/manifest.json --root examples/leaky-dist; then
+          if python -m fightre manifest verify /tmp/manifest.json --root examples/leaky-dist --secret ci-secret; then
             echo "expected tamper detection to fail" >&2
             exit 1
           fi
@@ -51,7 +51,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install ruff
+      # pinned: a newer ruff can enable new rules inside the selected groups and
+      # turn a green branch red without a code change
+      - run: pip install ruff==0.17.3
       - run: ruff check .
 
   client:
