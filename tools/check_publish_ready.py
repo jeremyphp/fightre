@@ -56,11 +56,26 @@ RULES: list[tuple[str, str, str, bool]] = [
     ),
     (
         "hardcoded-secret",
-        r"(?i)\b(?:password|passwd|secret|api_key|apikey)\s*[=:]\s*[\"'][^\"'\s]{8,}[\"']",
+        r"(?i)\b(?:password|passwd|secret|api_key|apikey)\s*[=:]\s*[\"']([^\"'\s]{8,})[\"']",
         "hardcoded secret-looking assignment (test fixtures may be intentional)",
         False,
     ),
 ]
+
+# Values that look like a secret but are obviously placeholders. Matching is done on
+# the captured value, not the whole match, so `secret = "manifest-test-secret"` in a
+# test is not reported while a real-looking base64 blob still is.
+PLACEHOLDER_HINTS = ("test", "example", "dummy", "fake", "sample", "changeme", "placeholder", "xxx")
+
+
+def is_placeholder_secret(match: re.Match[str]) -> bool:
+    try:
+        value = match.group(1)
+    except IndexError:
+        return False
+    lowered = value.lower()
+    return any(hint in lowered for hint in PLACEHOLDER_HINTS)
+
 
 REQUIRED_FILES = [
     "README.md",
@@ -127,6 +142,8 @@ def scan() -> int:
             if not rule_applies(name, rel):
                 continue
             for match in re.finditer(pattern, text):
+                if name == "hardcoded-secret" and is_placeholder_secret(match):
+                    continue
                 line_no = text.count("\n", 0, match.start()) + 1
                 snippet = match.group(0).replace("\n", " ")[:80]
                 hits.setdefault(name, []).append(f"      {rel}:{line_no}  {snippet}")
