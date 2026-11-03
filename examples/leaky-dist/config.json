@@ -1,5 +1,5 @@
 {
-  "api_key": "sk_live_51H8xQ2eZvKYlo2C9EXAMPLE1234",
+  "api_key": "demo-only-fake-key-0000",
   "db_url": "postgres://billing:EXAMPLE@10.4.2.11:5432/billing",
   "feature_flags": { "internal_beta": true }
 }

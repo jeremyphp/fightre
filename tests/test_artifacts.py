@@ -30,7 +30,7 @@ class ArtifactAuditTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             write(root, "assets/app.js", "console.log(1);\n//# sourceMappingURL=app.js.map\n")
             write(root, "assets/app.js.map", "{}")
-            write(root, "config.json", '{"api_key": "sk_live_abcdefghijklmnop1234"}')
+            write(root, "config.json", '{"api_key": "demo-only-fake-key-0000"}')
             write(root, "keys.pem", "-----BEGIN PRIVATE KEY-----\nMIIB\n-----END PRIVATE KEY-----\n")
             write(root, "settings.yaml", "db: https://db.internal:5432/app")
             write(root, ".env", "SECRET=abc\n")

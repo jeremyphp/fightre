@@ -2,7 +2,7 @@
 // Everything in this file is fake and exists to trigger an audit finding.
 (function () {
   var API_BASE = "https://internal-billing.svc.internal:8443/v1";
-  var api_key = "sk_live_51H8xQ2eZvKYlo2C9EXAMPLE1234";
+  var api_key = "demo-only-fake-key-0000";
 
   function chargeCustomer(id) {
     return fetch(API_BASE + "/charges", {
