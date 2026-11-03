@@ -1,0 +1,10 @@
+# Normalise commit authors for display.
+#
+# The initial commits were authored by a generic project identity so that the
+# maintainer's local git config was never modified. GitHub attributes commits by
+# email; this file maps the generic identity onto the real maintainer so the
+# contributor graph and commit links resolve correctly.
+#
+# Format: Real Name <real@email>  Old Name <old@email>
+
+Jeremy <jeremyphp@users.noreply.github.com> FightRE <fightre@example.invalid>
